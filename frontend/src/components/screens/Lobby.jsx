@@ -2,11 +2,9 @@ import { useRef, useEffect, useState } from "react";
 import { FiMic, FiMicOff } from "react-icons/fi";
 import { FaVideo, FaVideoSlash, FaTimes } from "react-icons/fa";
 import { FaCameraRotate } from "react-icons/fa6";
-import { io } from "socket.io-client";
+import { useAuthStore } from "../store/useAuthStore"; // Import Zustand store
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-
-const socket = io("https://real-time-chat-app-backend-9p1k.onrender.com", { transports: ["websocket"] });
 
 const configuration = {
   iceServers: [
@@ -18,7 +16,7 @@ const configuration = {
 };
 
 export const Lobby = () => {
-  const userInfo = 123456; // Assume userId is defined elsewhere
+  const { socket, authUser, setupCallHandlers } = useAuthStore(); // Get socket and authUser from Zustand store
 
   const pc = useRef(null);
   const localStream = useRef(null);
@@ -32,50 +30,34 @@ export const Lobby = () => {
   const [audioState, setAudioState] = useState(true);
   const [videoState, setVideoState] = useState(true);
   const [setIsFrontCamera] = useState(true);
+
+  const navigate = useNavigate();
+
   useEffect(() => {
+    if (!authUser) return; // Wait for user to be authenticated
+
+    // Start the call
     startCall();
-  }, []);
 
-  useEffect(() => {
-    hangupButton.current.disabled = true;
-    muteAudButton.current.disabled = true;
-    muteVideoButton.current.disabled = true;
-
-    socket.on("calling", async (e) => {
-      if (!localStream.current) return;
-
-      switch (e.type) {
-        case "offer":
-          await handleOffer(e);
-          break;
-        case "answer":
-          await handleAnswer(e);
-          break;
-        case "candidate":
-          await handleCandidate(e);
-          break;
-        case "ready":
-          if (pc.current) {
-            console.log("Already in call, ignoring");
-            return;
-          }
-          makeCall();
-          break;
-        case "bye":
-          if (pc.current) {
-            hangup();
-          }
-          break;
-        default:
-          console.log("Unhandled event", e);
-          break;
-      }
+    // Set up call handlers for WebRTC signaling events
+    setupCallHandlers({
+      onOffer: handleOffer,
+      onAnswer: handleAnswer,
+      onCandidate: handleCandidate,
+      onReady: () => {
+        if (!pc.current) makeCall();
+      },
+      onBye: () => {
+        if (pc.current) hangup();
+      },
     });
 
+    // Clean up event listeners when component unmounts or dependencies change
     return () => {
-      socket.off("calling");
+      socket?.off("calling");
     };
-  }, []);
+}, [authUser, socket]);  // Make sure setupCallHandlers is stable, otherwise it should be memoized
+
 
   async function makeCall() {
     console.log("Making a call...");
@@ -84,9 +66,9 @@ export const Lobby = () => {
 
       pc.current.onicecandidate = (e) => {
         if (e.candidate) {
-          socket.emit("calling", {
+          socket?.emit("calling", {
             type: "candidate",
-            id: userInfo,
+            id: authUser._id,
             candidate: e.candidate.candidate,
             sdpMid: e.candidate.sdpMid,
             sdpMLineIndex: e.candidate.sdpMLineIndex,
@@ -108,7 +90,7 @@ export const Lobby = () => {
 
       const offer = await pc.current.createOffer();
       await pc.current.setLocalDescription(offer);
-      socket.emit("calling", { id: userInfo, type: "offer", sdp: offer.sdp });
+      socket?.emit("calling", { id: authUser._id, type: "offer", sdp: offer.sdp });
     } catch (error) {
       console.error("Error making call:", error);
     }
@@ -125,9 +107,9 @@ export const Lobby = () => {
 
       pc.current.onicecandidate = (e) => {
         if (e.candidate) {
-          socket.emit("calling", {
+          socket?.emit("calling", {
             type: "candidate",
-            id: userInfo,
+            id: authUser._id,
             candidate: e.candidate.candidate,
             sdpMid: e.candidate.sdpMid,
             sdpMLineIndex: e.candidate.sdpMLineIndex,
@@ -149,7 +131,7 @@ export const Lobby = () => {
       const answer = await pc.current.createAnswer();
       await pc.current.setLocalDescription(answer);
 
-      socket.emit("calling", { id: userInfo, type: "answer", sdp: answer.sdp });
+      socket?.emit("calling", { id: authUser._id, type: "answer", sdp: answer.sdp });
     } catch (error) {
       console.error("Error handling offer:", error);
     }
@@ -210,13 +192,11 @@ export const Lobby = () => {
       muteAudButton.current.disabled = false;
       muteVideoButton.current.disabled = false;
 
-      socket.emit("calling", { id: userInfo, type: "ready" });
+      socket?.emit("calling", { id: authUser._id, type: "ready" });
     } catch (error) {
       console.error("Error starting call:", error);
     }
   };
-
-  const navigate = useNavigate();
 
   const endCall = () => {
     Swal.fire({
@@ -227,8 +207,7 @@ export const Lobby = () => {
     }).then((res) => {
       if (res.isConfirmed) {
         hangup();
-        socket.emit("calling", { id: userInfo, type: "bye" });
-
+        socket?.emit("calling", { id: authUser._id, type: "bye" });
         navigate("/"); // Navigate to the home page after ending the call
       }
     });
@@ -251,6 +230,7 @@ export const Lobby = () => {
       setVideoState(!videoState);
     }
   }
+
   function toggleVideoFrontRear() {
     setIsFrontCamera((prev) => !prev); // Toggle Camera
     startCall(); // Restart with new camera mode
