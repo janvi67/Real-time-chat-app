@@ -5,8 +5,7 @@ import { FaCameraRotate } from "react-icons/fa6";
 import { io } from "socket.io-client";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-
-const socket = io("http://localhost:5000", { transports: ["websocket"] });
+const socket = io("https://real-time-chat-app-backend-9p1k.onrender.com", { transports: ["websocket"] });
 
 const configuration = {
   iceServers: [
