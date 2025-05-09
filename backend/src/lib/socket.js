@@ -4,9 +4,8 @@ import express from "express";
 
 const app = express();
 const server = http.createServer(app);
-
 const io = new Server(server, {
-  cors: {
+   cors: {
     origin: ["https://real-time-chat-app-2vg5.vercel.app","http://localhost:5173"],
     credentials: true,
   },
@@ -15,9 +14,7 @@ const io = new Server(server, {
 export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
 }
-
-// used to store online users
-const userSocketMap = {}; // {userId: socketId}
+const userSocketMap = {};
 
 io.on("connection", (socket) => {
   console.log("A user connected", socket.id);
@@ -25,14 +22,29 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId) userSocketMap[userId] = socket.id;
 
-  // io.emit() is used to send events to all the connected clients
+  //io.emit() is used to send the event to all the conected clients
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-  socket.on("disconnect", () => {
+  socket.on("callUser", ({ userToCall, signalData, from }) => {
+    console.log("🚀 ~ socket.on ~ from:", from);
+    console.log("🚀 ~ socket.on ~ signalData:", signalData);
+    console.log("🚀 ~ socket.on ~ userToCall:", userToCall);
+    console.log("triggerf in this side");
+    io.to(userSocketMap[userToCall]).emit("incomingCall", {
+      signal: signalData,
+      from,
+    });
+  });
+
+  socket.on("calling", (message) => {
+    socket.broadcast.emit("calling", message);
+  });
+
+  socket.on("disconnected", () => {
     console.log("A user disconnected", socket.id);
     delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 });
 
-export { io, app, server };
+export { io, server, app };
