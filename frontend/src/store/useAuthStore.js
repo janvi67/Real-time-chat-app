@@ -81,35 +81,7 @@ export const useAuthStore = create((set, get) => ({
       set({ isUpdatingProfile: false });
     }
   },
-  setupCallHandlers: ({ onOffer, onAnswer, onCandidate, onReady, onBye }) => {
-  const socket = get().socket;
-  if (!socket) return;
-
-  socket.off("calling"); // Prevent duplicate handlers
-
-  socket.on("calling", async (data) => {
-    switch (data.type) {
-      case "offer":
-        await onOffer(data);
-        break;
-      case "answer":
-        await onAnswer(data);
-        break;
-      case "candidate":
-        await onCandidate(data);
-        break;
-      case "ready":
-        await onReady();
-        break;
-      case "bye":
-        await onBye();
-        break;
-      default:
-        console.log("Unhandled call type", data.type);
-    }
-  });
-},
-
+ 
   connectSocket: () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
