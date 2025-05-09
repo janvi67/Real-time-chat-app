@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { FiMic, FiMicOff } from "react-icons/fi";
 import { FaVideo, FaVideoSlash, FaTimes } from "react-icons/fa";
 import { FaCameraRotate } from "react-icons/fa6";
-import { useAuthStore } from "../store/useAuthStore"; // Import Zustand store
+import { useAuthStore } from "../../store/useAuthStore"; // Import Zustand store
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
