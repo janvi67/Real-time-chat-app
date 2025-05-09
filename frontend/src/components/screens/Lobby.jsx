@@ -5,7 +5,7 @@ import { FaCameraRotate } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { io } from "socket.io-client";
-import { useAuthStore } from "../store/useAuthStore"; // ✅ Adjust path as needed
+import { useAuthStore } from "../../store/useAuthStore"; // ✅ Adjust path as needed
 
 const configuration = {
   iceServers: [
