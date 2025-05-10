@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const socket = io("https://real-time-chat-app-backend-9p1k.onrender.com", {
+const socket = io("https://real-time-chat-app-2vg5.vercel.app", {
   transports: ["polling"], // fallback to polling
   path: "/socket.io", // default path
 });
