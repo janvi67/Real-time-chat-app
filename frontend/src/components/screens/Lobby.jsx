@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 
 const socket = io("https://real-time-chat-app-backend-9p1k.onrender.com", {
-  transports: ["websocket", "polling"], // fallback to polling
+  transports: ["polling"], // fallback to polling
   path: "/socket.io", // default path
 });
 
