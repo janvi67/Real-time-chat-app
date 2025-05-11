@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, EllipsisVertical, Video } from "lucide-react";
+import { X, EllipsisVertical } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import { useNavigate } from "react-router-dom";
@@ -102,11 +102,7 @@ const ChatHeader = () => {
             )}
           </div>
 
-          {/* Video Button */}
-          <button onClick={() => navigate(`/lobby/${selectedUser._id}`)}>
-            <Video />
-          </button>
-
+       
           {/* Close Chat Button */}
           <button
             onClick={() => {
