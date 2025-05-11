@@ -15,6 +15,7 @@ const ChatContainer = () => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
+     deleteMessage,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -42,8 +43,13 @@ const ChatContainer = () => {
       </div>
     );
   }
-
+const handleDeleteMessage = (messageId) => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      deleteMessage(messageId);
+    }
+  };
   return (
+    return (
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
 
@@ -51,35 +57,28 @@ const ChatContainer = () => {
         {messages.map((message) => (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+            className={`chat relative ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
             ref={messageEndRef}
           >
-            <div className=" chat-image avatar">
+            <div className="chat-image avatar">
               <div className="size-10 rounded-full border">
                 <img
-                  src={
-                    message.senderId === authUser._id
-                      ? authUser.profilePic || "/avatar.png"
-                      : selectedUser.profilePic || "/avatar.png"
-                  }
+                  src={message.senderId === authUser._id ? authUser.profilePic || "/avatar.png" : selectedUser.profilePic || "/avatar.png"}
                   alt="profile pic"
                 />
               </div>
             </div>
             <div className="chat-header mb-1">
-              <time className="text-xs opacity-50 ml-1">
-                {formatMessageTime(message.createdAt)}
-              </time>
+              <time className="text-xs opacity-50 ml-1">{formatMessageTime(message.createdAt)}</time>
             </div>
-            <div className="chat-bubble flex flex-col">
-              {message.image && (
-                <img
-                  src={message.image}
-                  alt="Attachment"
-                  className="sm:max-w-[200px] rounded-md mb-2"
-                />
+
+            <div className="chat-bubble relative flex flex-col">
+              {message.image && <img src={message.image} alt="Attachment" className="sm:max-w-[200px] rounded-md mb-2" />}
+              {message.text && (
+                <button onClick={() => handleDeleteMessage(message._id)}>
+                  {message.text}
+                </button>
               )}
-              {message.text && <p>{message.text}</p>}
             </div>
           </div>
         ))}
@@ -87,6 +86,7 @@ const ChatContainer = () => {
 
       <MessageInput />
     </div>
+  );
   );
 };
 export default ChatContainer;
