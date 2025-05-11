@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-   const socket = io("http://localhost:5173", {
+   const socket = io("https://real-time-chat-app-2vg5.vercel.app", {
      transports: ["websocket", "polling"],
      path: "/socket.io",
    });
