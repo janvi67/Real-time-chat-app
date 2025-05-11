@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-   const socket = io("https://real-time-chat-app-backend-9p1k.onrender.com", {
+   const socket = io("http://localhost:5173", {
      transports: ["websocket", "polling"],
      path: "/socket.io",
    });
