@@ -87,6 +87,6 @@ const handleDeleteMessage = (messageId) => {
       <MessageInput />
     </div>
   );
-  );
+
 };
 export default ChatContainer;
