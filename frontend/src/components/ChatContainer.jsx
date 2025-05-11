@@ -1,11 +1,11 @@
 import { useChatStore } from "../store/useChatStore";
-import { useEffect, useRef } from "react";
-
+import { useEffect, useRef, useCallback } from "react";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
+
 
 const ChatContainer = () => {
   const {
@@ -15,18 +15,24 @@ const ChatContainer = () => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
-     deleteMessage,
+    deleteMessage,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
-  useEffect(() => {
-    getMessages(selectedUser._id);
+  const fetchMessages = useCallback(() => {
+    if (selectedUser) {
+      console.log("🚀 ~ fetchMessages ~ selectedUser:", selectedUser)
+      getMessages(selectedUser._id);
+    }
+  }, [selectedUser, getMessages]);
 
+  useEffect(() => {
+    fetchMessages();
     subscribeToMessages();
 
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [fetchMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -43,13 +49,14 @@ const ChatContainer = () => {
       </div>
     );
   }
-const handleDeleteMessage = (messageId) => {
+
+  const handleDeleteMessage = (messageId) => {
     if (window.confirm("Are you sure you want to delete this message?")) {
       deleteMessage(messageId);
     }
   };
+
   return (
-    return (
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
 
@@ -87,6 +94,6 @@ const handleDeleteMessage = (messageId) => {
       <MessageInput />
     </div>
   );
-
 };
+
 export default ChatContainer;
